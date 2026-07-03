@@ -30,3 +30,33 @@ struct ComPortState {
     uint8_t rx_buf[512];
     DWORD   bytes_read;
 };
+
+
+#define RING_BUF_SIZE 64
+
+struct RingBuffer {
+    TofReading data[RING_BUF_SIZE];
+    uint8_t    head;
+    uint8_t    count;
+};
+
+enum GestureState {
+    GESTURE_IDLE = 0,
+    GESTURE_APPROACH,
+    GESTURE_HOLD,
+    GESTURE_RETRACT_1,
+    GESTURE_APPROACH_2,
+    GESTURE_COOLDOWN
+};
+
+struct GestureContext {
+    GestureState current_state;
+    GestureState prev_state;
+    uint32_t     state_entry_ms;
+};
+
+struct GestureEvent {
+    uint8_t  gesture_id;
+    uint16_t duration_ms;
+    uint8_t  confidence;
+};
