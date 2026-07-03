@@ -1,15 +1,18 @@
 #include <cstdio>
+#include <cstdlib>
 #include <windows.h>
 #include "types.h"
 #include "com_port.h"
 #include "packet_parser.h"
+#include "ring_buffer.h"
+#include "gesture_engine.h"
 
 static ComPortState g_com = {0};
 BOOL WINAPI ctrl_handler(DWORD event) {
     if (event == CTRL_C_EVENT || event == CTRL_CLOSE_EVENT) {
         com_close(&g_com);
         printf("\n[INFO] COM port closed safely. Exiting...\n");
-        return TRUE;
+        exit(0);
     }
     return FALSE;
 }
