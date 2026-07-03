@@ -7,6 +7,8 @@ add_executable(gesture_host
     src/main.cpp
     src/com_port.cpp
     src/packet_parser.cpp
+    src/ring_buffer.cpp
+    src/gesture_engine.cpp
 )
 
 target_link_libraries(gesture_host ole32)

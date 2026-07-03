@@ -19,24 +19,38 @@ int main(int argc, char* argv[]) {
 
     ParserState parser;
     parser_init(&parser);
+    
+    RingBuffer ring_buf;
+    rb_init(&ring_buf);
+    
+    GestureContext gesture;
+    gesture_reset(&gesture);
+    
     TofReading reading = {0};
+    GestureEvent event = {0};
 
     SetConsoleCtrlHandler(ctrl_handler, TRUE);
 
     if (!com_open(&g_com, port_name, 115200)) {
-        printf("[ERROR] Cannot open %s. Is it connected and not used by another app?\n", port_name);
+        printf("[ERROR] Cannot open %s\n", port_name);
         return 1;
     }
 
-    printf("[INFO] Connected to %s. Move your hand over the sensor!\n", port_name);
+    printf("[INFO] Connected to %s. Waiting for gestures...\n", port_name);
 
     while (true) {
         if (com_read(&g_com)) {
             for (DWORD i = 0; i < g_com.bytes_read; i++) {
                 char byte = (char)g_com.rx_buf[i];
                 if (parser_feed(&parser, byte, &reading)) {
-                    printf("Parsed -> Dist: %u mm | Time: %u ms\n", 
-                           reading.dist_mm, reading.timestamp_ms);
+                    
+                    rb_push(&ring_buf, &reading);
+                    
+                    if (gesture_update(&gesture, &ring_buf, reading.timestamp_ms, &event)) {
+                        if (event.gesture_id == 0x10) printf("\n>>> GESTURE DETECTED: DOUBLE WAVE!\n\n");
+                        if (event.gesture_id == 0x20) printf("\n>>> GESTURE DETECTED: SHORT HOLD (Point)\n\n");
+                        if (event.gesture_id == 0x21) printf("\n>>> GESTURE DETECTED: LONG HOLD (Dash)\n\n");
+                    }
                 }
             }
         }
