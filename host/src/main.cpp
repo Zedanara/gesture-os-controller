@@ -6,8 +6,10 @@
 #include "packet_parser.h"
 #include "ring_buffer.h"
 #include "gesture_engine.h"
+#include "os_control.h"
 
 static ComPortState g_com = {0};
+
 BOOL WINAPI ctrl_handler(DWORD event) {
     if (event == CTRL_C_EVENT || event == CTRL_CLOSE_EVENT) {
         com_close(&g_com);
@@ -39,7 +41,7 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    printf("[INFO] Connected to %s. Waiting for gestures...\n", port_name);
+    printf("[INFO] Connected to %s. System Control is READY!\n", port_name);
 
     while (true) {
         if (com_read(&g_com)) {
@@ -50,9 +52,7 @@ int main(int argc, char* argv[]) {
                     rb_push(&ring_buf, &reading);
                     
                     if (gesture_update(&gesture, &ring_buf, reading.timestamp_ms, &event)) {
-                        if (event.gesture_id == 0x10) printf("\n>>> GESTURE DETECTED: DOUBLE WAVE!\n\n");
-                        if (event.gesture_id == 0x20) printf("\n>>> GESTURE DETECTED: SHORT HOLD (Point)\n\n");
-                        if (event.gesture_id == 0x21) printf("\n>>> GESTURE DETECTED: LONG HOLD (Dash)\n\n");
+                        os_execute_action(&event);
                     }
                 }
             }
