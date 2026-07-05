@@ -25,13 +25,8 @@ void os_execute_action(const GestureEvent* event) {
             break;
 
         case 0x30:
-            printf("[ACTION] SWIPE IN -> Next Slide (KEY RIGHT)\n");
+            printf("[ACTION] SWIPE -> Next Slide (KEY RIGHT)\n");
             send_keyboard_key(VK_RIGHT);
-            break;
-
-        case 0x31:
-            printf("[ACTION] SWIPE OUT -> Previous Slide (KEY LEFT)\n");
-            send_keyboard_key(VK_LEFT);
             break;
 
         case 0x40:

@@ -38,16 +38,7 @@ bool gesture_update(GestureContext* ctx, const RingBuffer* rb, uint32_t now_ms, 
         case GESTURE_APPROACH:
             if (dist > DIST_FAR_MM) {
                 if (time_in_state < TIME_MAX_SWIPE_MS) {
-                    const TofReading* past = rb_peek(rb, 4);
-                    if (past) {
-                        if (dist > past->dist_mm) {
-                            out->gesture_id = 0x31;
-                        } else {
-                            out->gesture_id = 0x30;
-                        }
-                    } else {
-                        out->gesture_id = 0x30;
-                    }
+                    out->gesture_id = 0x30;
                     out->confidence = 100;
                     fsm_transition(ctx, GESTURE_COOLDOWN, now_ms);
                     return true;
