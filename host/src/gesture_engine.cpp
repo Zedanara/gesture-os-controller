@@ -1,4 +1,5 @@
 #include "gesture_engine.h"
+#include <cstdio>
 
 #define DIST_NEAR_MM        150
 #define DIST_FAR_MM         350
@@ -9,6 +10,7 @@
 #define TIME_MAX_SWIPE_MS   300
 #define TIME_MAX_WAVE_MS    600
 #define TIME_COOLDOWN_MS    1200
+#define TIME_THEREMIN_TIMEOUT_MS 4000
 
 void gesture_reset(GestureContext* ctx) {
     ctx->current_state = GESTURE_IDLE;
@@ -36,7 +38,7 @@ bool gesture_update(GestureContext* ctx, const RingBuffer* rb, uint32_t now_ms, 
         case GESTURE_APPROACH:
             if (dist > DIST_FAR_MM) {
                 if (time_in_state < TIME_MAX_SWIPE_MS) {
-                    out->gesture_id = 0x30;
+                    out->gesture_id = 0x30; // Swipe
                     out->confidence = 100;
                     fsm_transition(ctx, GESTURE_COOLDOWN, now_ms);
                     return true;
@@ -70,12 +72,33 @@ bool gesture_update(GestureContext* ctx, const RingBuffer* rb, uint32_t now_ms, 
         case GESTURE_APPROACH_2:
             if (dist > DIST_FAR_MM) {
                 if (time_in_state < TIME_MAX_WAVE_MS) {
-                    out->gesture_id = 0x10;
-                    out->confidence = 100;
-                    fsm_transition(ctx, GESTURE_COOLDOWN, now_ms);
-                    return true;
+                    printf("\n[FSM] === ENTERING VOLUME SLIDER MODE ===\n");
+                    fsm_transition(ctx, GESTURE_THEREMIN, now_ms);
                 } else {
                     fsm_transition(ctx, GESTURE_IDLE, now_ms);
+                }
+            }
+            break;
+
+        case GESTURE_THEREMIN:
+            if (dist < 400) { 
+                ctx->state_entry_ms = now_ms; 
+                
+                static uint32_t last_vol_time = 0;
+                if (now_ms - last_vol_time > 150) {
+                    last_vol_time = now_ms;
+                    if (dist < 200) {
+                        out->gesture_id = 0x40;
+                        return true;
+                    } else if (dist >= 250 && dist < 350) {
+                        out->gesture_id = 0x41;
+                        return true;
+                    }
+                }
+            } else {
+                if (time_in_state > TIME_THEREMIN_TIMEOUT_MS) {
+                    printf("[FSM] === EXITING VOLUME SLIDER MODE ===\n\n");
+                    fsm_transition(ctx, GESTURE_COOLDOWN, now_ms);
                 }
             }
             break;
