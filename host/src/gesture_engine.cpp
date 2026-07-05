@@ -9,7 +9,8 @@
 #define TIME_DOUBLE_GAP_MS  700
 #define TIME_MAX_SWIPE_MS   350
 #define TIME_MAX_WAVE_MS    600
-#define TIME_COOLDOWN_MS    1200  
+#define TIME_COOLDOWN_MS    1200
+#define TIME_THEREMIN_TIMEOUT_MS 4000
 
 void gesture_reset(GestureContext* ctx) {
     ctx->current_state = GESTURE_IDLE;
